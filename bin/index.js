@@ -304,7 +304,6 @@ async function setNames(trait) {
   } else {
     files.forEach((file) => {
       if (config.names && config.names[file] !== undefined) return;
-      console.log(file);
       names[file] = file.split('.')[0];
     });
   }
@@ -315,12 +314,6 @@ async function setNames(trait) {
 
 //SET WEIGHTS FOR EVERY TRAIT
 async function setWeights(trait) {
-  console.log('names');
-
-  console.log(names);
-  console.log('config.names');
-
-  console.log(config.names);
   if (config.weights && Object.keys(config.weights).length === Object.keys(names).length) {
     weights = config.weights;
     return;
