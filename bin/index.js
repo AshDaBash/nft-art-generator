@@ -84,6 +84,7 @@ async function main() {
   loadingDirectories.clear();
   await traitsOrder(true);
   await acceptDefaultNamesForTraits();
+  await acceptDefaultWeightingForTraits();
   await asyncForEach(traits, async trait => {
     await setNames(trait);
   });
@@ -323,6 +324,18 @@ async function setNames(trait) {
   config.names = { ...config.names, ...names };
 }
 
+//ACCEPT DEFAULT NAMES FOR TRAITS
+async function acceptDefaultWeightingForTraits() {
+  let { acceptDefaultWeighting } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'acceptDefaultWeighting',
+      message: `Do you want to accept the default weighting for all traits (this will be the total number of combinations - ${totalCombinations})?`,
+    },
+  ]);
+  config.acceptDefaultWeighting = acceptDefaultWeighting;
+}
+
 //SET WEIGHTS FOR EVERY TRAIT
 async function setWeights(trait) {
   if (config.weights && Object.keys(config.weights).length === Object.keys(names).length) {
@@ -330,18 +343,26 @@ async function setWeights(trait) {
     return;
   }
   const files = await getFilesForTrait(trait);
-  const weightPrompt = [];
-  files.forEach((file, i) => {
-    weightPrompt.push({
-      type: 'input',
-      name: names[file] + '_weight',
-      message: 'How many ' + names[file] + ' ' + trait + ' should there be? (default to ' + totalCombinations + ')',
+
+  if (!config.acceptDefaultWeighting) {
+    const weightPrompt = [];
+    files.forEach((file, i) => {
+      weightPrompt.push({
+        type: 'input',
+        name: names[file] + '_weight',
+        message: 'How many ' + names[file] + ' ' + trait + ' should there be? (default to ' + totalCombinations + ')',
+      });
     });
-  });
-  const selectedWeights = await inquirer.prompt(weightPrompt);
-  files.forEach((file, i) => {
-    weights[file] = selectedWeights[names[file] + '_weight'] ? selectedWeights[names[file] + '_weight'] : totalCombinations;
-  });
+    const selectedWeights = await inquirer.prompt(weightPrompt);
+    files.forEach((file, i) => {
+      weights[file] = selectedWeights[names[file] + '_weight'] ? selectedWeights[names[file] + '_weight'] : totalCombinations;
+    });
+  } else {
+    files.forEach((file, i) => {
+      weights[file] = totalCombinations;
+    });
+  }
+
   config.weights = weights;
 }
 
