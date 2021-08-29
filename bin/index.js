@@ -18,6 +18,7 @@ const ImageDataURI = require('image-data-uri');
 let basePath;
 let outputPath;
 let traits;
+let totalCombinations;
 let traitsToSort = [];
 let order = [];
 let weights = {};
@@ -77,6 +78,7 @@ async function main() {
   loadingDirectories.start();
   traits = getDirectories(basePath);
   traitsToSort = [...traits];
+  totalCombinations = await getTotalNumberOfCombinations(traits);
   await sleep(2);
   loadingDirectories.succeed();
   loadingDirectories.clear();
@@ -113,6 +115,15 @@ async function main() {
     writingConfig.succeed('Saved configuration successfully');
     writingConfig.clear();
   }
+}
+
+async function getTotalNumberOfCombinations(traits) {
+  let total = 1;
+  for (t of traits) {
+    const files = await getFilesForTrait(t);
+    total *= files.length;
+  }
+  return total;
 }
 
 //GET THE BASEPATH FOR THE IMAGES
@@ -324,12 +335,12 @@ async function setWeights(trait) {
     weightPrompt.push({
       type: 'input',
       name: names[file] + '_weight',
-      message: 'How many ' + names[file] + ' ' + trait + ' should there be?',
+      message: 'How many ' + names[file] + ' ' + trait + ' should there be? (default to ' + totalCombinations + ')',
     });
   });
   const selectedWeights = await inquirer.prompt(weightPrompt);
   files.forEach((file, i) => {
-    weights[file] = selectedWeights[names[file] + '_weight'];
+    weights[file] = selectedWeights[names[file] + '_weight'] ? selectedWeights[names[file] + '_weight'] : totalCombinations;
   });
   config.weights = weights;
 }
