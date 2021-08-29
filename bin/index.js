@@ -27,6 +27,7 @@ let seen = [];
 let metaData = {};
 let config = {
   metaData: {},
+  acceptDefaultNames: false,
   deleteDuplicates: null,
   generateMetadata: null,
 };
@@ -46,17 +47,17 @@ console.log(
   boxen(
     chalk.blue(
       ' /$$   /$$ /$$$$$$$$ /$$$$$$$$        /$$$$$$  /$$$$$$$  /$$$$$$$$        /$$$$$$  /$$$$$$$$ /$$   /$$ /$$$$$$$$ /$$$$$$$   /$$$$$$  /$$$$$$$$ /$$$$$$  /$$$$$$$ \n' +
-        '| $$$ | $$| $$_____/|__  $$__/       /$$__  $$| $$__  $$|__  $$__/       /$$__  $$| $$_____/| $$$ | $$| $$_____/| $$__  $$ /$$__  $$|__  $$__//$$__  $$| $$__  $$\n' +
-        '| $$$$| $$| $$         | $$         | $$  \\ $$| $$  \\ $$   | $$         | $$  \\__/| $$      | $$$$| $$| $$      | $$  \\ $$| $$  \\ $$   | $$  | $$  \\ $$| $$  \\ $$\n' +
-        '| $$ $$ $$| $$$$$      | $$         | $$$$$$$$| $$$$$$$/   | $$         | $$ /$$$$| $$$$$   | $$ $$ $$| $$$$$   | $$$$$$$/| $$$$$$$$   | $$  | $$  | $$| $$$$$$$/\n' +
-        '| $$  $$$$| $$__/      | $$         | $$__  $$| $$__  $$   | $$         | $$|_  $$| $$__/   | $$  $$$$| $$__/   | $$__  $$| $$__  $$   | $$  | $$  | $$| $$__  $$\n' +
-        '| $$\\  $$$| $$         | $$         | $$  | $$| $$  \\ $$   | $$         | $$  \\ $$| $$      | $$\\  $$$| $$      | $$  \\ $$| $$  | $$   | $$  | $$  | $$| $$  \\ $$\n' +
-        '| $$ \\  $$| $$         | $$         | $$  | $$| $$  | $$   | $$         |  $$$$$$/| $$$$$$$$| $$ \\  $$| $$$$$$$$| $$  | $$| $$  | $$   | $$  |  $$$$$$/| $$  | $$\n' +
-        '|__/  \\__/|__/         |__/         |__/  |__/|__/  |__/   |__/          \\______/ |________/|__/  \\__/|________/|__/  |__/|__/  |__/   |__/   \\______/ |__/  |__/\n \n' +
-        'Made with '
+      '| $$$ | $$| $$_____/|__  $$__/       /$$__  $$| $$__  $$|__  $$__/       /$$__  $$| $$_____/| $$$ | $$| $$_____/| $$__  $$ /$$__  $$|__  $$__//$$__  $$| $$__  $$\n' +
+      '| $$$$| $$| $$         | $$         | $$  \\ $$| $$  \\ $$   | $$         | $$  \\__/| $$      | $$$$| $$| $$      | $$  \\ $$| $$  \\ $$   | $$  | $$  \\ $$| $$  \\ $$\n' +
+      '| $$ $$ $$| $$$$$      | $$         | $$$$$$$$| $$$$$$$/   | $$         | $$ /$$$$| $$$$$   | $$ $$ $$| $$$$$   | $$$$$$$/| $$$$$$$$   | $$  | $$  | $$| $$$$$$$/\n' +
+      '| $$  $$$$| $$__/      | $$         | $$__  $$| $$__  $$   | $$         | $$|_  $$| $$__/   | $$  $$$$| $$__/   | $$__  $$| $$__  $$   | $$  | $$  | $$| $$__  $$\n' +
+      '| $$\\  $$$| $$         | $$         | $$  | $$| $$  \\ $$   | $$         | $$  \\ $$| $$      | $$\\  $$$| $$      | $$  \\ $$| $$  | $$   | $$  | $$  | $$| $$  \\ $$\n' +
+      '| $$ \\  $$| $$         | $$         | $$  | $$| $$  | $$   | $$         |  $$$$$$/| $$$$$$$$| $$ \\  $$| $$$$$$$$| $$  | $$| $$  | $$   | $$  |  $$$$$$/| $$  | $$\n' +
+      '|__/  \\__/|__/         |__/         |__/  |__/|__/  |__/   |__/          \\______/ |________/|__/  \\__/|________/|__/  |__/|__/  |__/   |__/   \\______/ |__/  |__/\n \n' +
+      'Made with '
     ) +
-      chalk.red('❤') +
-      chalk.blue(' by NotLuksus'),
+    chalk.red('❤') +
+    chalk.blue(' by NotLuksus'),
     { borderColor: 'red', padding: 3 }
   )
 );
@@ -80,6 +81,7 @@ async function main() {
   loadingDirectories.succeed();
   loadingDirectories.clear();
   await traitsOrder(true);
+  await acceptDefaultNamesForTraits();
   await asyncForEach(traits, async trait => {
     await setNames(trait);
   });
@@ -115,7 +117,7 @@ async function main() {
 
 //GET THE BASEPATH FOR THE IMAGES
 async function getBasePath() {
-  if (config.basePath !== undefined) { 
+  if (config.basePath !== undefined) {
     basePath = config.basePath;
     return;
   }
@@ -268,30 +270,58 @@ async function traitsOrder(isFirst) {
   await traitsOrder(false);
 }
 
+//ACCEPT DEFAULT NAMES FOR TRAITS
+async function acceptDefaultNamesForTraits() {
+  let { acceptDefaultNames } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'acceptDefaultNames',
+      message: 'Do you want to accept the default names for traits (this will be the file name)?',
+    },
+  ]);
+  config.acceptDefaultNames = acceptDefaultNames;
+}
+
 //SET NAMES FOR EVERY TRAIT
 async function setNames(trait) {
   names = config.names || names;
   const files = await getFilesForTrait(trait);
   const namePrompt = [];
-  files.forEach((file, i) => {
-    if (config.names && config.names[file] !== undefined) return;
-    namePrompt.push({
-      type: 'input',
-      name: trait + '_name_' + i,
-      message: 'What should be the name of the trait shown in ' + file + '?',
+  if (config.acceptDefaultNames === false) {
+    files.forEach((file, i) => {
+      if (config.names && config.names[file] !== undefined) return;
+      namePrompt.push({
+        type: 'input',
+        name: trait + '_name_' + i,
+        message: 'What should be the name of the trait shown in ' + file + '?',
+      });
     });
-  });
-  const selectedNames = await inquirer.prompt(namePrompt);
-  files.forEach((file, i) => {
-    if (config.names && config.names[file] !== undefined) return;
-    names[file] = selectedNames[trait + '_name_' + i];
-  });
-  config.names = {...config.names, ...names};
+    const selectedNames = await inquirer.prompt(namePrompt);
+    files.forEach((file, i) => {
+      if (config.names && config.names[file] !== undefined) return;
+      names[file] = selectedNames[trait + '_name_' + i];
+    });
+  } else {
+    files.forEach((file) => {
+      if (config.names && config.names[file] !== undefined) return;
+      console.log(file);
+      names[file] = file.split('.')[0];
+    });
+  }
+
+
+  config.names = { ...config.names, ...names };
 }
 
 //SET WEIGHTS FOR EVERY TRAIT
 async function setWeights(trait) {
-  if (config.weights && Object.keys(config.weights).length === Object.keys(names).length ) {
+  console.log('names');
+
+  console.log(names);
+  console.log('config.names');
+
+  console.log(config.names);
+  if (config.weights && Object.keys(config.weights).length === Object.keys(names).length) {
     weights = config.weights;
     return;
   }
@@ -431,17 +461,15 @@ function generateMetadataObject(id, images) {
 }
 
 async function writeMetadata() {
-  if(config.metaData.splitFiles)
-  {
+  if (config.metaData.splitFiles) {
     let metadata_output_dir = outputPath + "metadata/"
     if (!fs.existsSync(metadata_output_dir)) {
       fs.mkdirSync(metadata_output_dir, { recursive: true });
     }
-    for (var key in metaData){
+    for (var key in metaData) {
       await writeFile(metadata_output_dir + key, JSON.stringify(metaData[key]));
     }
-  }else
-  {
+  } else {
     await writeFile(outputPath + 'metadata.json', JSON.stringify(metaData));
   }
 }
@@ -450,7 +478,7 @@ async function loadConfig() {
   try {
     const data = await readFile('config.json')
     config = JSON.parse(data.toString());
-  } catch (error) {}
+  } catch (error) { }
 }
 
 async function writeConfig() {
