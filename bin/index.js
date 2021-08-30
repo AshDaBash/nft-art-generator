@@ -492,7 +492,7 @@ async function writeMetadata() {
       fs.mkdirSync(metadata_output_dir, { recursive: true });
     }
     for (var key in metaData) {
-      await writeFile(metadata_output_dir + key, JSON.stringify(metaData[key]));
+      await writeFile(metadata_output_dir + key + '.json', JSON.stringify(metaData[key]));
     }
   } else {
     await writeFile(outputPath + 'metadata.json', JSON.stringify(metaData));
